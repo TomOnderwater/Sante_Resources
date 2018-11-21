@@ -7,13 +7,18 @@ class Time {
     this.second = second;
     timer = 0;
   }
+  void setTime() {
+    hour = hour();
+    minute = minute();
+    second = second();
+  }
   String getTime() {
     String out = "";
-    millisecond = millis() % 1000;
     if (millis() > timer + 1000) {
       timer += 1000;
       second ++;
     }
+    millisecond = millis() % 1000;
     if (second > 59) {
       second = second % 60;
       minute ++;

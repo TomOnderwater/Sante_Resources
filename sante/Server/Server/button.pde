@@ -18,7 +18,7 @@ class Button {
     fill(state ? 255 : 200);
     rect(posx, posy, size, size);
     fill(state ? 200 : 100);
-    textMode(CENTER);
+   // textMode(CENTER);
     text(text, posx + (size/2)-10, posy + (size /2));
     if (state && firstTimeSaving) {
       firstTimeSaving = false;
