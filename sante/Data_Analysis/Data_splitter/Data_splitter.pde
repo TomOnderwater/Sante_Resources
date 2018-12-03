@@ -1,9 +1,19 @@
 void setup() {
-  println(toInt("-100"));
-  println(toInt("459039"));
-  println(toInt("-1113"));
-  println(toInt("h009"));
-  splitData(1, true, 1000);
+  float time = timeToFloat("16,12,54,387");
+  println(time);
+  time *= 1.05;
+  println(floatToTime(time));
+    //splitData(1, true, 1000);
+    //splitData(2, true, 1000);
+    //splitData(3, true, 1000);
+    //splitData(4, true, 1000);
+    //splitData(5, true, 1000);
+    //alterTime(1, 10);
+    alterTime(2, 10);
+    alterTime(3, 10);
+    alterTime(4, 10);
+    alterTime(5, 10);
+    
 }
 
 
@@ -15,7 +25,7 @@ void splitData(int id, boolean all, int n) {
   int amount = all ? lines.length : n;
   int progress = 0;
   for (int i = 0; i < amount; i++) {
-    if (lines.length % i == 0) {
+    if (i % percent == 0) {
       println(progress + "%");
       progress ++;
     }
@@ -49,6 +59,80 @@ void splitData(int id, boolean all, int n) {
   println("done");
 }
 
+void alterTime(int id, int minutesOff) {
+  String data = "";
+  String input = "data/" + id + ".txt";
+  String lines[] = loadStrings(input);
+  int percent = int((float)lines.length / 100);
+  int amount = lines.length;
+  int progress = 0;
+
+  float startTime;
+  float endTime;
+  float factor = 0;
+  String[] firstDataLine = split(lines[0], ",");
+  String[] lastDataLine = split(lines[amount-1], ",");
+ // amount = 100;
+
+  String sTime = firstDataLine[5] + "," + firstDataLine[6] + "," + firstDataLine[7] + "," + firstDataLine[8];
+  String eTime = lastDataLine[5] + "," + lastDataLine[6] + "," + lastDataLine[7] + "," + lastDataLine[8];
+  startTime = timeToFloat(sTime);
+  endTime = timeToFloat(eTime);
+  factor = ((endTime - startTime) + (minutesOff * 60)) / (endTime - startTime);
+  println("factor is : " + factor);
+
+//  progress counter
+  for (int i = 0; i < amount; i++) {
+    if (i % percent == 0) {
+      println(progress + "%");
+      progress ++;
+    }
+    String[] thisLine = split(lines[i], ",");
+    String tTime = thisLine[5] + "," + thisLine[6] + "," + thisLine[7] + "," + thisLine[8];
+    float thisTime = timeToFloat(tTime) - startTime;
+    thisTime *= factor;
+    thisTime += startTime;
+    tTime = floatToTime(thisTime);
+    for (int j = 0; j < 5; j++) {
+      data += thisLine[j];
+      data += ",";
+    }
+    data += tTime;
+    data += "/";
+  }
+  String[] outData = split(data, "/");
+  String saveLocation = "data/" + id +"fxd.txt";
+  saveStrings(saveLocation, outData);
+  println("done");
+}
+
+float timeToFloat(String data) {
+  float out = 0;
+  String[] line = split(data, ",");
+  out += toInt(line[0]) * 3600;
+  out += toInt(line[1]) * 60;
+  out += toInt(line[2]);
+  out += (float)toInt(line[3]) / 1000f;
+  return out;
+}
+String floatToTime(float time) {
+  float timeRemaining = time;
+  String out = "";
+  int hours = 0;
+  int minutes = 0;
+  int seconds = 0;
+  int milliseconds = 0;
+  hours = (int) time / 3600;
+  timeRemaining = time - (hours * 3600);
+  minutes = (int) timeRemaining / 60;
+  timeRemaining = timeRemaining - (minutes * 60);
+  seconds = (int)timeRemaining;
+  timeRemaining = timeRemaining - seconds;
+  milliseconds = (int) (timeRemaining * 1000);
+  out = hours + "," + minutes + "," + seconds + "," + milliseconds;
+  return out;
+}
+
 int toInt(String data) {
   int mult = 1;
   int out = 0;
@@ -65,5 +149,43 @@ int toInt(String data) {
     }
   }
   out *= mult;
+  return NaN ? 0 : out;
+}
+
+float toFloat(String data) {
+  int mult = 1;
+  int preComma = 0;
+  float afterComma = 0;
+  int numbersAfterComma = 1;
+  float out = 0;
+  boolean dotFound = false;
+  boolean NaN = false;
+  for (int i = 0; i < data.length(); i++) {
+    char c = data.charAt(i);
+    //negative number, found a '-'
+    if (c == 45) {
+      mult *= -1;
+    }
+    //found a '.'
+    else if (c == 46 && dotFound == false) {
+      dotFound = true;
+    }
+    // found a number
+    else if (c >= 48 && c <= 57) {
+      if (dotFound) {
+        numbersAfterComma *= 10;
+        float val = c -48;
+        val /= numbersAfterComma;
+        afterComma += val;
+      } else {
+        preComma *= 10;
+        preComma += (c-48);
+      }
+    } else {
+      NaN = true;
+    }
+  }
+  out = preComma + afterComma;
+  out *= (float)mult;
   return NaN ? 0 : out;
 }
