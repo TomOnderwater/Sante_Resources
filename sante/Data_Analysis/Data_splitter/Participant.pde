@@ -8,7 +8,7 @@ class Participant {
   int currentRead;
 
   Participant(int id) {
-    String lines[] = loadStrings("data/" + id + "float.txt");
+    String lines[] = loadStrings("data/" + id + "flt.txt");
     for (int i = 0; i < lines.length; i++) {
       if (i == 0) {
         println(lines[i]);
@@ -40,7 +40,7 @@ class Participant {
     text("participant: " + id +"  "+  time, xPos + 5, yPos-20);
     selector(xPos, (int)yPos);
     int factor = 100;
-    for(int i = xPos; i < xLength + xPos; i+=factor) {
+    for (int i = xPos; i < xLength + xPos; i+=factor) {
       stroke(0);
       strokeWeight(1);
       line(i - (time*factor) % factor, yPos - 5, i - (time * factor) % factor, yPos+5);
@@ -49,7 +49,7 @@ class Participant {
     int end = currentRead + (xPos * 10);
     end = end > stamp.size() ? stamp.size() : end;
     boolean firstPass = true;
-   // text("participant: " + id +"  "+  time + "  " + currentRead + "  " + end, xPos + 5, yPos-20);
+    // text("participant: " + id +"  "+  time + "  " + currentRead + "  " + end, xPos + 5, yPos-20);
     for (int i = currentRead; i < end; i++) {
       if (i >= 1) {
         Timestamp s1 = stamp.get(i-1);
@@ -111,6 +111,32 @@ class Participant {
       s.setXY((x + 5) + i * spacing, y+5);
       s.showButton();
     }
+  }
+  float getAVG(float beginTime, float endTime, int dataStream) {
+    float out = 0;
+    //do stuff
+
+    return out;
+  }
+
+  float getTotalMovement(float beginTime, float endTime, int axis) {
+    float out = 0;
+    for (int i = 0; i < stamp.size(); i++) {
+      Timestamp s = stamp.get(i);
+      if (s.getTime() > beginTime && s.getTime() < endTime) {
+        if (i == 0) {
+          //prev = s.getVals()[axis];
+        } else {
+          Timestamp s2 = stamp.get(i-1);
+          float prev = s2.getVals()[axis];
+          out += s.getVals()[axis] - prev;
+        }
+      }
+    }
+    return out;
+  }
+  int getId() {
+    return id;
   }
 }
 

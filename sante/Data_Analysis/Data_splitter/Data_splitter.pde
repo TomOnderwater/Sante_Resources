@@ -3,7 +3,7 @@ static int standardY = 400;
 
 GUI gui;
 Participant[] participant = new Participant[5];
-float startTime;
+float startTime, endTime;
 
 void setup() {
   float time = timeToFloat("16,12,54,387");
@@ -22,6 +22,7 @@ void setup() {
    // alterTime(5, 10);
    for (int i = 1; i < 6; i++) {
    //saveTimeAsFloat(i);
+  // cleanData(i);
    participant[i-1] = new Participant(i);
    }
    size(600, 400);
@@ -29,8 +30,13 @@ void setup() {
    gui = new GUI(standardX, standardY);
      String allLines[] = loadStrings("data/data.txt");
     String[] firstDataLine = split(allLines[0], ",");
+    String[] lastDataLine = split(allLines[allLines.length-1], ",");
+    String eTime = lastDataLine[5] + "," + lastDataLine[6] + "," + lastDataLine[7] + "," + lastDataLine[8];
   String sTime = firstDataLine[5] + "," + firstDataLine[6] + "," + firstDataLine[7] + "," + firstDataLine[8];
    startTime = timeToFloat(sTime);
+   endTime = timeToFloat(eTime);
+   
+   createHighLightDocument(1, 60);
 }
 
 void draw() {
@@ -213,6 +219,45 @@ int toInt(String data) {
   }
   out *= mult;
   return NaN ? 0 : out;
+}
+
+void cleanData(int id) {
+String data = "";
+  String input = "data/" + id + "float.txt";
+  String lines[] = loadStrings(input);
+  int percent = int((float)lines.length / 100);
+  int amount = lines.length;
+  int progress = 0;
+
+ // amount = 100;
+
+float highestVal = 0;
+//loop
+  for (int i = 0; i < amount; i++) {
+    //progress counter
+    if (i % percent == 0) {
+      println(progress + "%");
+      progress ++;
+    }
+    //end of progress counter
+    String[] thisLine = split(lines[i], ",");
+    
+    float thisTime = toFloat(thisLine[5]);
+    if (thisTime > highestVal) {
+      highestVal = thisTime;
+      //let it be saved, no errors found
+          for (int j = 0; j < 5; j++) {
+      data += thisLine[j];
+      data += ",";
+    }
+    data += thisTime;
+    data += "/";
+    }
+  }
+  String[] outData = split(data, "/");
+  String saveLocation = "data/" + id +"flt.txt";
+  saveStrings(saveLocation, outData);
+  println("done");
 }
 
 float toFloat(String data) {
