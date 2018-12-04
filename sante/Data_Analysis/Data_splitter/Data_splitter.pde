@@ -1,7 +1,13 @@
+static int standardX = 600;
+static int standardY = 400;
+
+GUI gui;
+Participant[] participant = new Participant[5];
+
 void setup() {
   float time = timeToFloat("16,12,54,387");
   println(time);
-  time *= 1.05;
+  time *= 1.0;
   println(floatToTime(time));
     //splitData(1, true, 1000);
     //splitData(2, true, 1000);
@@ -9,11 +15,22 @@ void setup() {
     //splitData(4, true, 1000);
     //splitData(5, true, 1000);
     //alterTime(1, 10);
-    alterTime(2, 10);
-    alterTime(3, 10);
-    alterTime(4, 10);
-    alterTime(5, 10);
-    
+   // alterTime(2, 10);
+   // alterTime(3, 10);
+   // alterTime(4, 10);
+   // alterTime(5, 10);
+   for (int i = 1; i < 6; i++) {
+   //saveTimeAsFloat(i);
+   participant[i-1] = new Participant(i);
+   }
+   size(600, 400);
+   surface.setResizable(true);
+   gui = new GUI(standardX, standardY);
+   
+}
+
+void draw() {
+  gui.display();
 }
 
 
@@ -104,6 +121,48 @@ void alterTime(int id, int minutesOff) {
   String saveLocation = "data/" + id +"fxd.txt";
   saveStrings(saveLocation, outData);
   println("done");
+}
+
+void saveTimeAsFloat(int id) {
+  String data = "";
+  String input = "data/" + id + ".txt";
+  String lines[] = loadStrings(input);
+  String allLines[] = loadStrings("data/data.txt");
+  int percent = int((float)lines.length / 100);
+  int amount = lines.length;
+  int progress = 0;
+
+ // amount = 100;
+ String[] firstDataLine = split(allLines[0], ",");
+
+  String sTime = firstDataLine[5] + "," + firstDataLine[6] + "," + firstDataLine[7] + "," + firstDataLine[8];
+  float startTime = timeToFloat(sTime);
+
+
+//  progress counter
+  for (int i = 0; i < amount; i++) {
+    if (i % percent == 0) {
+      println(progress + "%");
+      progress ++;
+    }
+    String[] thisLine = split(lines[i], ",");
+    String tTime = thisLine[5] + "," + thisLine[6] + "," + thisLine[7] + "," + thisLine[8];
+    float thisTime = timeToFloat(tTime) - startTime;
+   // thisTime *= factor;
+    //thisTime += startTime;
+   // tTime = floatToTime(thisTime);
+    for (int j = 0; j < 5; j++) {
+      data += thisLine[j];
+      data += ",";
+    }
+    data += thisTime;
+    data += "/";
+  }
+  String[] outData = split(data, "/");
+  String saveLocation = "data/" + id +"float.txt";
+  saveStrings(saveLocation, outData);
+  println("done");
+  
 }
 
 float timeToFloat(String data) {
