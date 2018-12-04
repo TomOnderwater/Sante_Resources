@@ -36,7 +36,8 @@ void setup() {
    startTime = timeToFloat(sTime);
    endTime = timeToFloat(eTime);
    
-   createHighLightDocument(1, 60);
+   createHighLightDocument(1, 2);
+  //println(participant[1].getTotalMovement(10, 20, 0));
 }
 
 void draw() {

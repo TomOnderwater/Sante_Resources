@@ -36,6 +36,7 @@ class Participant {
     currentRead = currentRead > 0 ? currentRead : 0;
   }
   void showParticipant(int xPos, float yPos, int xLength, float yHeight, float time) {
+    stroke(0);
     line(xPos, yPos, xPos + xLength, yPos);
     text("participant: " + id +"  "+  time, xPos + 5, yPos-20);
     selector(xPos, (int)yPos);
@@ -112,25 +113,61 @@ class Participant {
       s.showButton();
     }
   }
-  float getAVG(float beginTime, float endTime, int dataStream) {
+  int getHeartBeatCount(float beginTime, float eTime) {
+    int count = 0;
+    
+    return count;
+  }
+  float getAVG(float beginTime, float eTime, int dataStream) {
     float out = 0;
     //do stuff
-
-    return out;
+    //Heartbeat data
+    int count = 0;
+    if (dataStream == 3) {
+      for (int i = 0; i < stamp.size(); i++) {
+        Timestamp s = stamp.get(i);
+        if (s.getTime() > beginTime && s.getTime() < eTime) {
+          count++;
+          out += s.getHeartBeat();
+        }
+      }
+    } 
+    //Accelerometer data
+    else {
+            for (int i = 0; i < stamp.size(); i++) {
+        Timestamp s = stamp.get(i);
+        if (s.getTime() > beginTime && s.getTime() < eTime) {
+          count++;
+          out += s.getVals()[dataStream];
+        }
+      }
+    }
+    return count > 0 ? out / count : 0;
   }
 
-  float getTotalMovement(float beginTime, float endTime, int axis) {
+  float getTotalMovement(float beginTime, float eTime, int axis) {
     float out = 0;
     for (int i = 0; i < stamp.size(); i++) {
       Timestamp s = stamp.get(i);
-      if (s.getTime() > beginTime && s.getTime() < endTime) {
+      if (s.getTime() > beginTime && s.getTime() < eTime) {
         if (i == 0) {
+          //do nothing
           //prev = s.getVals()[axis];
         } else {
           Timestamp s2 = stamp.get(i-1);
           float prev = s2.getVals()[axis];
-          out += s.getVals()[axis] - prev;
+          out += abs(s.getVals()[axis]-prev);
         }
+      }
+    }
+    return out;
+  }
+  int getSamples(float beginTime, float eTime) {
+    int out = 0;
+    for (int i = 0; i < stamp.size(); i++) {
+      Timestamp s = stamp.get(i);
+      if (s.getTime() > beginTime && s.getTime() < eTime) {
+        out ++;
       }
     }
     return out;

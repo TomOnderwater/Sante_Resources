@@ -19,15 +19,19 @@ void createHighLightDocument(int id, float timeSkip) {
   data += "/";
   data += "/";
   
-  for (float i = startTime; i < endTime; i += timeSkip) {
+  for (float i = 0; i < endTime - startTime; i += timeSkip) {
     data += "Time: ";
-    data += floatToTime(i);
-    data += " X: ";
+    data += floatToTime(i + startTime);
+    data += " --- X: ";
+    //println(participant[ID].getTotalMovement(i, i + timeSkip, 0)); 
+    
     data += participant[ID].getTotalMovement(i, i + timeSkip, 0);
     data += " Y: ";
-    participant[ID].getTotalMovement(i, i + timeSkip, 1);
+    data += participant[ID].getTotalMovement(i, i + timeSkip, 1);
     data += " Z: ";
-    participant[ID].getTotalMovement(i, i + timeSkip, 2);
+    data += participant[ID].getTotalMovement(i, i + timeSkip, 2);
+    data += " samples: ";
+    data += participant[ID].getSamples(i, i+timeSkip);
     data += "/";
   }
   String[] outData = split(data, "/");
