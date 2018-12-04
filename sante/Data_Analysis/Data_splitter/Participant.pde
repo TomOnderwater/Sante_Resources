@@ -40,6 +40,11 @@ class Participant {
     text("participant: " + id +"  "+  time, xPos + 5, yPos-20);
     selector(xPos, (int)yPos);
     int factor = 100;
+    for(int i = xPos; i < xLength + xPos; i+=factor) {
+      stroke(0);
+      strokeWeight(1);
+      line(i - (time*factor) % factor, yPos - 5, i - (time * factor) % factor, yPos+5);
+    }
 
     int end = currentRead + (xPos * 10);
     end = end > stamp.size() ? stamp.size() : end;

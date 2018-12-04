@@ -50,6 +50,7 @@ class GUI {
   }
     void showStuff(int finalX) {
     text(floatToTime(currentTime), finalX + 5, height - 20);
+    text(floatToTime(startTime + currentTime), finalX + 5, height - 35);
     }
 }
 

@@ -1,5 +1,5 @@
 void mouseWheel(MouseEvent event) {
- float val = event.getCount() * -1;
+ float val = event.getCount() * -0.1;
  gui.flowTime(val);
  for (int i = 0; i < participant.length; i++) {
    if (val < 0) {

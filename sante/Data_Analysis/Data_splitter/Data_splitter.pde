@@ -3,6 +3,7 @@ static int standardY = 400;
 
 GUI gui;
 Participant[] participant = new Participant[5];
+float startTime;
 
 void setup() {
   float time = timeToFloat("16,12,54,387");
@@ -26,7 +27,10 @@ void setup() {
    size(600, 400);
    surface.setResizable(true);
    gui = new GUI(standardX, standardY);
-   
+     String allLines[] = loadStrings("data/data.txt");
+    String[] firstDataLine = split(allLines[0], ",");
+  String sTime = firstDataLine[5] + "," + firstDataLine[6] + "," + firstDataLine[7] + "," + firstDataLine[8];
+   startTime = timeToFloat(sTime);
 }
 
 void draw() {
