@@ -36,7 +36,10 @@ void setup() {
    startTime = timeToFloat(sTime);
    endTime = timeToFloat(eTime);
    
-   createHighLightDocument(1, 2);
+   //createHighLightDocument(1, 2);
+   participant[2].calculateBeats();
+   createHighLightDocument(3, 60);
+   println(participant[2].getBeatAmount());
   //println(participant[1].getTotalMovement(10, 20, 0));
 }
 

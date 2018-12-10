@@ -19,7 +19,7 @@ class GUI {
     textSize = 16;
     selectParticipants = new ParticipantSelector(new int[]{1, 2, 3, 4, 5});
     participantStream = new ParticipantStream();
-    currentTime = 600;
+    currentTime = 1500;
   }
 
   void display() {

@@ -2,6 +2,7 @@ class Participant {
   public int id;
   ArrayList<Timestamp> stamp = new ArrayList<Timestamp>();
   ArrayList<SelectorButton> showValue = new ArrayList<SelectorButton>();
+  ArrayList<HeartbeatPeak> heartbeatPeaks = new ArrayList<HeartbeatPeak>();
   color[] colors = new color[4];
   float accelMin;
   float accelMax;
@@ -38,19 +39,33 @@ class Participant {
   void showParticipant(int xPos, float yPos, int xLength, float yHeight, float time) {
     stroke(0);
     line(xPos, yPos, xPos + xLength, yPos);
-    text("participant: " + id +"  "+  time, xPos + 5, yPos-20);
+    text("participant: " + id, xPos + 5, yPos-20);
     selector(xPos, (int)yPos);
+    //scaleLines(xPos, yPos, xLength, yHeight);
+    //factor is time related, make it smaller to see more data at a time, larger for a more precise view of data
     int factor = 100;
+    //second bars
     for (int i = xPos; i < xLength + xPos; i+=factor) {
       stroke(0);
       strokeWeight(1);
       line(i - (time*factor) % factor, yPos - 5, i - (time * factor) % factor, yPos+5);
+      pushMatrix();
+      translate(i - (time * factor) % factor, yPos - 10);
+      rotate(-PI/2);
+      // float val = time + ((float)xPos / 100);
+      int val = int(time + (i / 100) - 3);
+      text(val, 0, 3);
+      popMatrix();
     }
 
     int end = currentRead + (xPos * 10);
     end = end > stamp.size() ? stamp.size() : end;
     boolean firstPass = true;
     // text("participant: " + id +"  "+  time + "  " + currentRead + "  " + end, xPos + 5, yPos-20);
+    //show the heartBeats
+
+    showBeats(time, xPos, yPos, xLength, yHeight, factor);
+
     for (int i = currentRead; i < end; i++) {
       if (i >= 1) {
         Timestamp s1 = stamp.get(i-1);
@@ -81,6 +96,7 @@ class Participant {
                 float y2 = yPos - (yHeight / 2) + scaleLine(s2.getHeartBeat(), yHeight, 0, 1023);
                 stroke(colors[j]);
                 line(x1, y1, x2, y2);
+                //for (int z = 0; z < heartbeatPeaks.size();
               }
               //show the line
             }
@@ -100,6 +116,100 @@ class Participant {
       }
     }
   }
+  void scaleLines(int x, float y, int xLength, float yHeight) {
+    // line(x, y-yHeight/2, xLength, y-yHeight/2);
+    // line(x, y+yHeight/2, xLength, y+yHeight/2);
+  }
+
+  void showBeats(float time, float xPos, float yPos, float xLength, float yHeight, int factor) {
+    float bTime = time;
+    float eTime = time + (xLength / factor);
+    for (int i = 0; i < heartbeatPeaks.size(); i++) {
+      HeartbeatPeak p = heartbeatPeaks.get(i);
+      float t = p.getTime();
+      if (t > bTime && t < eTime) {
+        stroke(255, 0, 0);
+        float x = xPos + (factor * (t-time));
+        line(x, yPos - 10, x, yPos + 10);
+      }
+    }
+  }
+
+  void calculateBeats() {
+    //float[] vals = getAVG(beginTime, eTime, 3);
+    //for (int i = 0; i < stamp.size(); i++) {
+    //  Timestamp s = stamp.get(i);
+    //  //all data
+
+    //}
+    float checkTime = 4;
+    int minimumSamples = 40;
+    float StartTime = 0;
+    float EndTime = endTime - startTime;
+   // println("beginTime = " + StartTime + " endTime = " + EndTime);
+   float minPeak = 10;
+   float maxPeak = 30;
+    for (float i = StartTime; i < EndTime-(checkTime/2); i+= checkTime/2) {
+      //println(i);
+
+      float[] vals = getAVG(i, i+checkTime, 3);
+      if (vals[3] > minimumSamples) {
+      //  println("minimum found: " + vals[3]); 
+        boolean passAVG = false;
+        float[] allVals = getAllVals(i, i+checkTime, 3);
+        //println(allVals.length);
+      //  println(vals);
+        for (int j = 0; j < allVals.length-1; j+= 2) {
+          //check if value passed average
+       //   println("c: " + j);
+       //println(vals[0]);
+          if (passAVG) {
+            if (allVals[j] > vals[0]) {
+              //currently value is below average
+              passAVG = false;
+            }
+          } else {
+            if (allVals[j] < vals[0]) {
+              passAVG = true;
+              //currently value is above average
+              //start looking for the peak 
+              float currentHighest = allVals[j];
+              int n = j;
+              //boolean notFound = true;
+              for (int z = j; z < allVals.length-1; z+= 2) {
+                if (allVals[z] > currentHighest) {
+                  currentHighest = allVals[z];
+                  n = z;
+                } else {
+               //   println("peak found at ");
+                  //notFound = false;
+                  break;
+                }
+              }
+              //add the new heartbeat
+              heartbeatPeaks.add(new HeartbeatPeak(allVals[n+1]));
+        
+            }
+          }
+        }
+      }
+    }
+    //cleanup data
+    println("current peak amount = " + heartbeatPeaks.size());
+    for (int i = heartbeatPeaks.size()-1; i >= 0; i--) {
+      HeartbeatPeak thisPeak = heartbeatPeaks.get(i);
+      for (int j = 0; j< heartbeatPeaks.size(); j++) {
+        HeartbeatPeak thatPeak = heartbeatPeaks.get(j);
+        if (thisPeak.getTime() == thatPeak.getTime() && j != i) {
+
+          heartbeatPeaks.remove(i);
+        }
+      }
+    }
+        println("current peak amount = " + heartbeatPeaks.size());
+  }
+  void showMovementIntensity(int axis) {
+  }
 
   float scaleLine(float input, float h, float minVal, float maxVal) {
     return map(input, minVal, maxVal, 0, h);
@@ -115,34 +225,74 @@ class Participant {
   }
   int getHeartBeatCount(float beginTime, float eTime) {
     int count = 0;
-    
+
+
     return count;
   }
-  float getAVG(float beginTime, float eTime, int dataStream) {
-    float out = 0;
+  float[] getAVG(float beginTime, float eTime, int dataStream) {
+    float[] out = {0, -10000, 10000, 0};
     //do stuff
     //Heartbeat data
+
     int count = 0;
     if (dataStream == 3) {
       for (int i = 0; i < stamp.size(); i++) {
         Timestamp s = stamp.get(i);
         if (s.getTime() > beginTime && s.getTime() < eTime) {
           count++;
-          out += s.getHeartBeat();
+          float val = s.getHeartBeat();
+          if (val > out[1]) {
+            out[1] = val;
+          } 
+          if (val < out[2]) {
+            out[2] = val;
+          }
+          out[0] += val;
         }
       }
     } 
     //Accelerometer data
     else {
-            for (int i = 0; i < stamp.size(); i++) {
+      for (int i = 0; i < stamp.size(); i++) {
         Timestamp s = stamp.get(i);
         if (s.getTime() > beginTime && s.getTime() < eTime) {
           count++;
-          out += s.getVals()[dataStream];
+          float val = s.getVals()[dataStream];
+          if (val > out[1]) {
+            out[1] = val;
+          } 
+          if (val < out[2]) {
+            out[2] = val;
+          }
+          out[0] += val;
         }
       }
     }
-    return count > 0 ? out / count : 0;
+    if (count > 0) {
+      out[0] = out[0] / count;
+      out[3] = count;
+      return out;
+    } else {
+      return out;
+    }
+  }
+
+  float[] getAllVals(float beginTime, float eTime, int dataStream) {
+    float[] vals = new float[0];
+
+    for (int i = 0; i < stamp.size(); i++) {
+      Timestamp s = stamp.get(i);
+      if (s.getTime() > beginTime && s.getTime() < eTime) {
+        if (dataStream == 3) {
+          vals = append(vals, s.getHeartBeat());
+          vals = append(vals, s.getTime());
+        } else {
+          vals = append(vals, s.getVals()[dataStream]);
+          vals = append(vals, s.getTime());
+        }
+      }
+    }
+    return vals;
   }
 
   float getTotalMovement(float beginTime, float eTime, int axis) {
@@ -175,6 +325,13 @@ class Participant {
   int getId() {
     return id;
   }
+  int getBeatAmount() {
+    return heartbeatPeaks.size();
+  }
+  float getHeartBeatPeakTime(int index) {
+    HeartbeatPeak p = index <= heartbeatPeaks.size() ? heartbeatPeaks.get(index) : heartbeatPeaks.get(0);
+    return p.getTime();
+  }
 }
 
 class Timestamp {
@@ -197,5 +354,19 @@ class Timestamp {
   }
   int getHeartBeat() {
     return heartBeat;
+  }
+}
+
+class HeartbeatPeak {
+  public float time;
+
+  HeartbeatPeak(float time) {
+    this.time = time;
+  }
+  float getTime() {
+    return this.time;
+  }
+  void setTime(float time) {
+    this.time = time;
   }
 }

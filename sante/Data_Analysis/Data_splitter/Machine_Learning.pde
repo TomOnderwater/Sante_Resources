@@ -6,6 +6,7 @@ void createHighLightDocument(int id, float timeSkip) {
       ID = i;
     }
   }
+  println("creating document for participant: " + id + ", index = " + ID);
   
   String data = "";
   data += "TimeSkip = ";
@@ -32,6 +33,13 @@ void createHighLightDocument(int id, float timeSkip) {
     data += participant[ID].getTotalMovement(i, i + timeSkip, 2);
     data += " samples: ";
     data += participant[ID].getSamples(i, i+timeSkip);
+    //data += participant[ID].get
+    data += "/";
+  }
+  println(participant[ID].getBeatAmount());
+  for (int i = 0; i < participant[ID].getBeatAmount(); i++) {
+    data += "peak at: ";
+    data += participant[ID].getHeartBeatPeakTime(i);
     data += "/";
   }
   String[] outData = split(data, "/");
