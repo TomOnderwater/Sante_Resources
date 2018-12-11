@@ -35,7 +35,7 @@ class GUI {
     selectParticipants.showSelector(finalX, 0);
     participantStream.display(finalX, currentTime, selectParticipants.isSelected());
     showStuff(finalX);
-    
+    input.handleInput(finalX);
   }
   
   

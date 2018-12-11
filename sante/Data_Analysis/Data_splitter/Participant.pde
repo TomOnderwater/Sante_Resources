@@ -142,32 +142,33 @@ class Participant {
     //  //all data
 
     //}
-    float checkTime = 4;
+    float checkTime = 8;
     int minimumSamples = 40;
     float StartTime = 0;
     float EndTime = endTime - startTime;
-   // println("beginTime = " + StartTime + " endTime = " + EndTime);
-   float minPeak = 30;
-   float maxPeak = 150;
-   float offset = 15;
+    // println("beginTime = " + StartTime + " endTime = " + EndTime);
+    float minPeak = 30;
+    float maxPeak = 200;
+    float offset = 20;
     for (float i = StartTime; i < EndTime-(checkTime/2); i+= checkTime/2) {
       //println(i);
 
       float[] vals = getAVG(i, i+checkTime, 3);
+      float mid = (vals[1] /2) + (vals[2]/2);
       if (vals[3] > minimumSamples) {
-      //  println("minimum found: " + vals[3]); 
-        boolean passAVG = false;
+        //  println("minimum found: " + vals[3]); 
+        boolean passAVG = true;
         float[] allVals = getAllVals(i, i+checkTime, 3);
         //println(allVals.length);
-      //  println(vals);
-       float recordLow = 0;
-       float recordHigh = 1000;
+        //  println(vals);
+        float recordLow = 0;
+        float recordHigh = 1023;
         for (int j = 0; j < allVals.length-1; j+= 2) {
           //check if value passed average
-       //   println("c: " + j);
-       //println(vals[0]);
+          //   println("c: " + j);
+          //println(vals[0]);
           if (passAVG) {
-            if (allVals[j] < vals[0] + offset) {
+            if (allVals[j] < mid + offset) {
               //currently value is below average
               passAVG = false;
               //look for bottom
@@ -180,7 +181,7 @@ class Participant {
                   currentLowest = allVals[z];
                   n = z;
                 } else {
-               //   println("peak found at ");
+                  //   println("peak found at ");
                   //notFound = false;
                   break;
                 }
@@ -188,7 +189,7 @@ class Participant {
               recordLow = allVals[n];
             }
           } else {
-            if (allVals[j] > vals[0] - offset) {
+            if (allVals[j] > mid - offset) {
               passAVG = true;
               //currently value is going up
               //start looking for the peak 
@@ -200,7 +201,7 @@ class Participant {
                   currentHighest = allVals[z];
                   n = z;
                 } else {
-               //   println("peak found at ");
+                  //   println("peak found at ");
                   //notFound = false;
                   break;
                 }
@@ -208,9 +209,9 @@ class Participant {
               recordHigh = allVals[n];
               //add the new heartbeat
               float PtP = recordHigh - recordLow;
-             // println(PtP + ", " + recordHigh + ", " + recordLow);
+              // println(PtP + ", " + recordHigh + ", " + recordLow);
               if (PtP > minPeak && PtP < maxPeak) {
-              heartbeatPeaks.add(new HeartbeatPeak(allVals[n+1]));
+                heartbeatPeaks.add(new HeartbeatPeak(allVals[n+1]));
               }
             }
           }
@@ -218,36 +219,106 @@ class Participant {
       }
     }
     //cleanup data
-   // println("current peak amount = " + heartbeatPeaks.size());
+    // println("current peak amount = " + heartbeatPeaks.size());
     for (int i = heartbeatPeaks.size()-1; i >= 0; i--) {
       HeartbeatPeak thisPeak = heartbeatPeaks.get(i);
-      for (int j = 0; j< heartbeatPeaks.size(); j++) {
+      for (int j = heartbeatPeaks.size()-1; j >= 0; j--) {
         HeartbeatPeak thatPeak = heartbeatPeaks.get(j);
         if (thisPeak.getTime() == thatPeak.getTime() && j != i) {
 
-          heartbeatPeaks.remove(i);
+          heartbeatPeaks.remove(j);
         }
       }
     }
-   //     println("current peak amount = " + heartbeatPeaks.size());
+    //fill in holes
+    //fixHoles();
+    //     println("current peak amount = " + heartbeatPeaks.size());
   }
   void showMovementIntensity(int axis) {
   }
+
+  void fixHoles() {
+    float checkTime = 20;
+    float StartTime = 0;
+    float EndTime = endTime - startTime;
+
+    for (float time = StartTime; time < EndTime-(checkTime/2); time+= checkTime/2) {
+      for (int i = 0; i < heartbeatPeaks.size()-1; i++) {
+        HeartbeatPeak p1 = heartbeatPeaks.get(i);
+        HeartbeatPeak p2 = heartbeatPeaks.get(i+1);
+        float backBPM = 0;
+        float sum = 0;
+        float thisTime = p1.getTime();
+        float checkDistance = 1;
+        float errorMargin = 0.1;
+        float lastTime = p1.getTime();
+        boolean doneChecking;
+        
+        for (int j = i; j >= 0 && j > i-checkDistance; j--) {
+          HeartbeatPeak p = heartbeatPeaks.get(j);
+          sum += lastTime - p.getTime();
+          sum /= checkDistance;
+          //check how long for the next pulse
+          if (p2.getTime() - p1.getTime() > (sum * 2) - errorMargin) {
+            //distance too long!
+            doneChecking = true;
+            if (checkDistance < 5) {
+              if (checkDistance > 1) {
+                if (j > 0) {
+                  HeartbeatPeak p3 = heartbeatPeaks.get(j-1);
+                  if (p.getTime() - p3.getTime() < sum + errorMargin && p.getTime() - p3.getTime() > sum - errorMargin) {
+                    checkDistance ++;
+                    doneChecking = false;
+                  }
+                }
+              }
+            }
+            if (doneChecking) {
+              float timeBetween = p1.getTime()-p2.getTime();
+              if (sum < 1.5) {
+                for (float t = time; time < (time + timeBetween) - sum; time += sum) {
+                  heartbeatPeaks.add(new HeartbeatPeak(t));
+                }
+              }
+            }
+          }
+          lastTime = p.getTime();
+        }
+        
+      }
+    }
+  }
   int getBPM(float bTime, float eTime) {
-   int out = 0;
-   int count = 0;
-   float AVG = 0;
-   for (int i = 0; i < heartbeatPeaks.size()-1; i++) {
-     HeartbeatPeak p1 = heartbeatPeaks.get(i);
-     HeartbeatPeak p2 = heartbeatPeaks.get(i+1);
-     if (p1.getTime() > bTime && p1.getTime() < eTime) {
-     AVG += p2.getTime()-p1.getTime();
-     count++;
-     }
-   }
-   AVG = count > 0 ? AVG /= count : 0;
-   out = round(60 / AVG);  
-   return out;
+    int out = 0;
+    int count = 0;
+    float AVG = 0;
+    for (int i = 0; i < heartbeatPeaks.size()-1; i++) {
+      HeartbeatPeak p1 = heartbeatPeaks.get(i);
+      HeartbeatPeak p2 = heartbeatPeaks.get(i+1);
+      if (p1.getTime() > bTime && p1.getTime() < eTime && p2.getTime() > bTime && p2.getTime() < eTime) {
+        AVG += p2.getTime()-p1.getTime();
+        count++;
+      }
+    }
+    AVG = count > 0 ? AVG /= count : 0;
+    out = round(60 / AVG);  
+    return out;
+  }
+  float getBPMFLOAT(float bTime, float eTime) {
+    float out = 0;
+    int count = 0;
+    float AVG = 0;
+    for (int i = 0; i < heartbeatPeaks.size()-1; i++) {
+      HeartbeatPeak p1 = heartbeatPeaks.get(i);
+      HeartbeatPeak p2 = heartbeatPeaks.get(i+1);
+      if (p1.getTime() > bTime && p1.getTime() < eTime) {
+        AVG += p2.getTime()-p1.getTime();
+        count++;
+      }
+    }
+    AVG = count > 0 ? AVG /= count : 0;
+    out = (60 / AVG);  
+    return out;
   }
   float scaleLine(float input, float h, float minVal, float maxVal) {
     return map(input, maxVal, minVal, 0, h);
@@ -261,7 +332,7 @@ class Participant {
       s.showButton();
     }
   }
- 
+
   float[] getAVG(float beginTime, float eTime, int dataStream) {
     float[] out = {0, -10000, 10000, 0};
     //do stuff
@@ -347,7 +418,7 @@ class Participant {
   }
   float getMovementIntensity(float beginTime, float eTime, int axis) {
     float out = 0;
-    
+
     return out;
   }
   int getSamples(float beginTime, float eTime) {
