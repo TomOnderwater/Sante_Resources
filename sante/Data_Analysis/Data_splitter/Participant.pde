@@ -147,8 +147,9 @@ class Participant {
     float StartTime = 0;
     float EndTime = endTime - startTime;
    // println("beginTime = " + StartTime + " endTime = " + EndTime);
-   float minPeak = 40;
+   float minPeak = 30;
    float maxPeak = 150;
+   float offset = 15;
     for (float i = StartTime; i < EndTime-(checkTime/2); i+= checkTime/2) {
       //println(i);
 
@@ -160,13 +161,13 @@ class Participant {
         //println(allVals.length);
       //  println(vals);
        float recordLow = 0;
-       float recordHigh = 0;
+       float recordHigh = 1000;
         for (int j = 0; j < allVals.length-1; j+= 2) {
           //check if value passed average
        //   println("c: " + j);
        //println(vals[0]);
           if (passAVG) {
-            if (allVals[j] < vals[0]) {
+            if (allVals[j] < vals[0] + offset) {
               //currently value is below average
               passAVG = false;
               //look for bottom
@@ -187,9 +188,9 @@ class Participant {
               recordLow = allVals[n];
             }
           } else {
-            if (allVals[j] > vals[0]) {
+            if (allVals[j] > vals[0] - offset) {
               passAVG = true;
-              //currently value is above average
+              //currently value is going up
               //start looking for the peak 
               float currentHighest = allVals[j];
               int n = j;
@@ -207,7 +208,7 @@ class Participant {
               recordHigh = allVals[n];
               //add the new heartbeat
               float PtP = recordHigh - recordLow;
-              println(PtP + ", " + recordHigh + ", " + recordLow);
+             // println(PtP + ", " + recordHigh + ", " + recordLow);
               if (PtP > minPeak && PtP < maxPeak) {
               heartbeatPeaks.add(new HeartbeatPeak(allVals[n+1]));
               }
