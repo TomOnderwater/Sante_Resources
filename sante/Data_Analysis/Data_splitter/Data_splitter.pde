@@ -38,8 +38,9 @@ void setup() {
    
    //createHighLightDocument(1, 2);
    participant[2].calculateBeats();
-   createHighLightDocument(3, 60);
+   //createHighLightDocument(3, 60);
    println(participant[2].getBeatAmount());
+   println(participant[2].getBPM(1771, 1777));
   //println(participant[1].getTotalMovement(10, 20, 0));
 }
 

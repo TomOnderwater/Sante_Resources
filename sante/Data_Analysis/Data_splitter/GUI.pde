@@ -7,6 +7,7 @@ class GUI {
   int textSize;
   
   float currentTime;
+  Input input;
   
   ParticipantSelector selectParticipants;
   ParticipantStream participantStream;
@@ -20,6 +21,7 @@ class GUI {
     selectParticipants = new ParticipantSelector(new int[]{1, 2, 3, 4, 5});
     participantStream = new ParticipantStream();
     currentTime = 1500;
+    input = new Input(maxTextSize);
   }
 
   void display() {
@@ -33,6 +35,7 @@ class GUI {
     selectParticipants.showSelector(finalX, 0);
     participantStream.display(finalX, currentTime, selectParticipants.isSelected());
     showStuff(finalX);
+    
   }
   
   

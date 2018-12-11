@@ -147,8 +147,8 @@ class Participant {
     float StartTime = 0;
     float EndTime = endTime - startTime;
    // println("beginTime = " + StartTime + " endTime = " + EndTime);
-   float minPeak = 10;
-   float maxPeak = 30;
+   float minPeak = 40;
+   float maxPeak = 150;
     for (float i = StartTime; i < EndTime-(checkTime/2); i+= checkTime/2) {
       //println(i);
 
@@ -159,17 +159,35 @@ class Participant {
         float[] allVals = getAllVals(i, i+checkTime, 3);
         //println(allVals.length);
       //  println(vals);
+       float recordLow = 0;
+       float recordHigh = 0;
         for (int j = 0; j < allVals.length-1; j+= 2) {
           //check if value passed average
        //   println("c: " + j);
        //println(vals[0]);
           if (passAVG) {
-            if (allVals[j] > vals[0]) {
+            if (allVals[j] < vals[0]) {
               //currently value is below average
               passAVG = false;
+              //look for bottom
+              float currentLowest = allVals[j];
+              recordLow = currentLowest;
+              int n = j;
+              //boolean notFound = true;
+              for (int z = j; z < allVals.length-1; z+= 2) {
+                if (allVals[z] < currentLowest) {
+                  currentLowest = allVals[z];
+                  n = z;
+                } else {
+               //   println("peak found at ");
+                  //notFound = false;
+                  break;
+                }
+              }
+              recordLow = allVals[n];
             }
           } else {
-            if (allVals[j] < vals[0]) {
+            if (allVals[j] > vals[0]) {
               passAVG = true;
               //currently value is above average
               //start looking for the peak 
@@ -186,16 +204,20 @@ class Participant {
                   break;
                 }
               }
+              recordHigh = allVals[n];
               //add the new heartbeat
+              float PtP = recordHigh - recordLow;
+              println(PtP + ", " + recordHigh + ", " + recordLow);
+              if (PtP > minPeak && PtP < maxPeak) {
               heartbeatPeaks.add(new HeartbeatPeak(allVals[n+1]));
-        
+              }
             }
           }
         }
       }
     }
     //cleanup data
-    println("current peak amount = " + heartbeatPeaks.size());
+   // println("current peak amount = " + heartbeatPeaks.size());
     for (int i = heartbeatPeaks.size()-1; i >= 0; i--) {
       HeartbeatPeak thisPeak = heartbeatPeaks.get(i);
       for (int j = 0; j< heartbeatPeaks.size(); j++) {
@@ -206,13 +228,28 @@ class Participant {
         }
       }
     }
-        println("current peak amount = " + heartbeatPeaks.size());
+   //     println("current peak amount = " + heartbeatPeaks.size());
   }
   void showMovementIntensity(int axis) {
   }
-
+  int getBPM(float bTime, float eTime) {
+   int out = 0;
+   int count = 0;
+   float AVG = 0;
+   for (int i = 0; i < heartbeatPeaks.size()-1; i++) {
+     HeartbeatPeak p1 = heartbeatPeaks.get(i);
+     HeartbeatPeak p2 = heartbeatPeaks.get(i+1);
+     if (p1.getTime() > bTime && p1.getTime() < eTime) {
+     AVG += p2.getTime()-p1.getTime();
+     count++;
+     }
+   }
+   AVG = count > 0 ? AVG /= count : 0;
+   out = round(60 / AVG);  
+   return out;
+  }
   float scaleLine(float input, float h, float minVal, float maxVal) {
-    return map(input, minVal, maxVal, 0, h);
+    return map(input, maxVal, minVal, 0, h);
   }
 
   void selector(int x, int y) {
@@ -223,12 +260,7 @@ class Participant {
       s.showButton();
     }
   }
-  int getHeartBeatCount(float beginTime, float eTime) {
-    int count = 0;
-
-
-    return count;
-  }
+ 
   float[] getAVG(float beginTime, float eTime, int dataStream) {
     float[] out = {0, -10000, 10000, 0};
     //do stuff
@@ -310,6 +342,11 @@ class Participant {
         }
       }
     }
+    return out;
+  }
+  float getMovementIntensity(float beginTime, float eTime, int axis) {
+    float out = 0;
+    
     return out;
   }
   int getSamples(float beginTime, float eTime) {
