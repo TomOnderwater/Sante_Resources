@@ -24,12 +24,16 @@ class Input {
         result += floatToTime(toFloat(cmds[1]));
         results.add(new String(result));
         result = "";
-      } else if (cmds.length == 4) {
+      } else if (cmds.length == 1) {
+        gui.currentTime = toFloat(cmds[0]);
+      }else if (cmds.length == 4) {
         int[] axes = {0, 1};
         participant[toInt(cmds[0])-1].createScatter(axes, toFloat(cmds[1]), toFloat(cmds[2]), toInt(cmds[3]));
+        //saveScatter(100,100,"test");
         result += "created document: ";
         result += cmds[3];
         results.add(new String(result));
+        result = "";
       }
     }
     fill(255);

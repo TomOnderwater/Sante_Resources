@@ -236,35 +236,60 @@ class Participant {
   }
   void showMovementIntensity(int axis) {
   }
-  
+
   void createScatter(int[] axis, float bTime, float eTime, int index) {
+    int size = 400;
+    PImage output = createImage(size, size, RGB);
+    PGraphics pg;
+    String path = "results/scatter/" + id+ "-" + index + ".png";
+    float factor = 25;
+    pg = createGraphics(size, size);
+    pg.beginDraw();
+    pg.background(255);
     String data = "";
     float [] startVal = new float[axis.length];
-    boolean firstDataPoint = true;
+    for (int i = 0; i < axis.length; i++) {
+      startVal[i] = getAVG( bTime, eTime, axis[i])[0];
+    }
+    float[] prevVal = {size/2,size/2};
+    float[] currentVal = {0,0};
     for (int i = 0; i < stamp.size(); i++) {
       Timestamp s = stamp.get(i);
       if (s.getTime() > bTime && s.getTime() < eTime) {
-        if (firstDataPoint) {
-          firstDataPoint = false;
           for (int j = 0; j< axis.length; j++) {
-            float val = s.getVals()[axis[j]];
-            startVal[j] = val;
-            data += "0";
+            float val = startVal[j] - s.getVals()[axis[j]];
+            data += val;
             data += ",";
+            currentVal[j] = (val * factor) + size/2;
           }
-        } else {
-          for (int j = 0; j< axis.length; j++) {
-            float val = s.getVals()[axis[j]];
-            data += startVal[j] - val;
-            data += ",";
-          }
-        }
+          //pg.strokeWeight(2);
+          pg.stroke(255,0, 0);
+          pg.line(prevVal[0], prevVal[1],currentVal[0],currentVal[1]);
+          //println(prevVal[0] + " : " + currentVal[0]);
+          prevVal[0] = currentVal[0];
+          prevVal[1] = currentVal[1];
         data += "/";
       }
     }
+    pg.stroke(0);
+    pg.line(size/2, 0, size/2, size);
+    pg.line(0, size/2, size, size/2);
+    for (int i = -4; i <= 4; i++) {
+      int pos = (size/2) + i * (size/8);
+      if (i != 0) {
+       // pg.textSize(10);
+       // pg.fill(0);
+        pg.line(pos, size/2-5, pos, size/2 + 5);
+        pg.line(size/2-5, pos, size/2+5, pos);
+        //pg.text(i, pos, size/2);
+      }
+    }
+    pg.endDraw();
+    output = pg;
+    output.save(path);
     String[] outData = split(data, "/");
     String saveLocation = "results/scatter/" + id +"-" + index + "scatter.txt";
-    saveStrings(saveLocation, outData);
+    //saveStrings(saveLocation, outData);
     println("done");
   }
 
