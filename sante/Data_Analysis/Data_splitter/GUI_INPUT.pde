@@ -24,6 +24,12 @@ class Input {
         result += floatToTime(toFloat(cmds[1]));
         results.add(new String(result));
         result = "";
+      } else if (cmds.length == 4) {
+        int[] axes = {0, 1};
+        participant[toInt(cmds[0])-1].createScatter(axes, toFloat(cmds[1]), toFloat(cmds[2]), toInt(cmds[3]));
+        result += "created document: ";
+        result += cmds[3];
+        results.add(new String(result));
       }
     }
     fill(255);

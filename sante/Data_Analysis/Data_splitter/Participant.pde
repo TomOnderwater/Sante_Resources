@@ -236,6 +236,37 @@ class Participant {
   }
   void showMovementIntensity(int axis) {
   }
+  
+  void createScatter(int[] axis, float bTime, float eTime, int index) {
+    String data = "";
+    float [] startVal = new float[axis.length];
+    boolean firstDataPoint = true;
+    for (int i = 0; i < stamp.size(); i++) {
+      Timestamp s = stamp.get(i);
+      if (s.getTime() > bTime && s.getTime() < eTime) {
+        if (firstDataPoint) {
+          firstDataPoint = false;
+          for (int j = 0; j< axis.length; j++) {
+            float val = s.getVals()[axis[j]];
+            startVal[j] = val;
+            data += "0";
+            data += ",";
+          }
+        } else {
+          for (int j = 0; j< axis.length; j++) {
+            float val = s.getVals()[axis[j]];
+            data += startVal[j] - val;
+            data += ",";
+          }
+        }
+        data += "/";
+      }
+    }
+    String[] outData = split(data, "/");
+    String saveLocation = "results/scatter/" + id +"-" + index + "scatter.txt";
+    saveStrings(saveLocation, outData);
+    println("done");
+  }
 
   void fixHoles() {
     float checkTime = 20;
@@ -253,7 +284,7 @@ class Participant {
         float errorMargin = 0.1;
         float lastTime = p1.getTime();
         boolean doneChecking;
-        
+
         for (int j = i; j >= 0 && j > i-checkDistance; j--) {
           HeartbeatPeak p = heartbeatPeaks.get(j);
           sum += lastTime - p.getTime();
@@ -284,7 +315,6 @@ class Participant {
           }
           lastTime = p.getTime();
         }
-        
       }
     }
   }
