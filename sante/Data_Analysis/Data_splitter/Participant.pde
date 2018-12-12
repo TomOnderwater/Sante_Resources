@@ -308,10 +308,8 @@ class Participant {
       catch (Exception e) {
         //no problems found
         duplicatePath = false;
-        if (duplicatePath == false) {
          output.save(path);
            println("saved as " + path);
-        }
       }
     }
 
