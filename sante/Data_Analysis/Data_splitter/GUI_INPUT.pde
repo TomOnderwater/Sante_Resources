@@ -1,39 +1,109 @@
 class Input {
   int Width;
-  String result;
   ArrayList<String> results;
   TextField textField;
   Input(int Width) {
     this.Width = Width;
     textField = new TextField();
-    result = "";
     results = new ArrayList<String>();
+
+    results.add(new String("setttime HH MM"));
+    results.add(new String("settime HH MM SS"));
+    results.add(new String("settime seconds")); 
+    results.add(new String("makescatter p s e f"));
+    results.add(new String("getbeat p s e"));
+    results.add(new String("--------------"));
+    results.add(new String("f = filename"));
+    results.add(new String("e = endtime"));  
+    results.add(new String("s = starttime"));
+    results.add(new String("p = participant"));
+    results.add(new String("COMMANDS:"));
   }
   void handleInput(int Width) {
     this.Width = Width;
     textField.drawField();
     String cmd = textField.getOutput();
     if (cmd.length() > 0) {
-      String[] cmds = split(cmd, ",");
+      String[] cmds = split(cmd, " ");
       println(cmds);
-      if (cmds.length == 3) {
-        println("calculating BPM");
-        result += "BPM = ";
-        result += participant[toInt(cmds[0])-1].getBPM(toFloat(cmds[1]), toFloat(cmds[2]));
-        result += " at: ";
-        result += floatToTime(toFloat(cmds[1]));
-        results.add(new String(result));
-        result = "";
-      } else if (cmds.length == 1) {
-        gui.currentTime = toFloat(cmds[0]);
-      }else if (cmds.length == 4) {
-        int[] axes = {0, 1};
-        participant[toInt(cmds[0])-1].createScatter(axes, toFloat(cmds[1]), toFloat(cmds[2]), toInt(cmds[3]));
-        //saveScatter(100,100,"test");
-        result += "created document: ";
-        result += cmds[3];
-        results.add(new String(result));
-        result = "";
+      switch(cmds[0]) {
+      case "getbeat":
+        try {
+          // println("calculating BPM");
+          String result = "";
+          result += "BPM = ";
+          result += participant[toInt(cmds[1])-1].getBPM(toFloat(cmds[2]), toFloat(cmds[3]));
+          result += " at: ";
+          result += floatToTime(toFloat(cmds[2]));
+          results.add(new String(result));
+        } 
+        catch(Exception e) {
+          results.add(new String("unkown command"));
+        }
+        break;
+      case "makescatter":
+        try {
+          String result = "";
+          int[] axes = {0, 1};
+          participant[toInt(cmds[1])-1].createScatter(axes, toFloat(cmds[2]), toFloat(cmds[3]), cmds[4]);
+          //saveScatter(100,100,"test");
+          result += "saved as ";
+          result += cmds[4];
+          results.add(new String(result));
+        } 
+        catch(Exception e) {
+          results.add(new String("unkown command"));
+        }
+        break;
+      case "settime":
+        try {
+          String[] input = new String [3];
+          boolean flt = false;
+          try {
+            //String[] lines = split(cmds[1], " ");
+            input[2] = "00";
+            if (cmds.length > 2) {
+              for (int i = 1; i < cmds.length; i++) {
+                input[i-1] = cmds[i];
+              }
+            } else {
+              //results.add(new String("haha"));
+              input[0] = cmds[1];
+              flt = true;
+            }
+          } 
+          catch (Exception e) {
+            input[0] = cmds[1];
+            flt = true;
+          }
+          if (flt) {
+            try {
+              gui.currentTime = toFloat(input[0]);
+            } 
+            catch (Exception e) {
+              results.add(new String("invalid number"));
+            }
+          } else {
+            try {
+              float t = 0;
+              t += toFloat(input[2]);
+              t += toFloat(input[1]) * 60;
+              t += toFloat(input[0]) * 3600;
+              gui.currentTime = t;
+            } 
+            catch (Exception e) {
+              results.add(new String("invalid time"));
+            }
+          }
+        } 
+        catch(Exception e) {
+          results.add(new String("unknown command"));
+        }
+        break;
+      default:
+        results.add(new String("unknow command"));
+
+        break;
       }
     }
     fill(255);
@@ -42,7 +112,6 @@ class Input {
       text(r, 20, 80 + (i * 20));
     }
   }
-
   class TextField {
     boolean selected;
     String input;

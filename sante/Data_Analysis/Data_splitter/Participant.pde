@@ -237,38 +237,35 @@ class Participant {
   void showMovementIntensity(int axis) {
   }
 
-  void createScatter(int[] axis, float bTime, float eTime, int index) {
+  void createScatter(int[] axis, float bTime, float eTime, String filename) {
     int size = 400;
     PImage output = createImage(size, size, RGB);
     PGraphics pg;
-    String path = "results/scatter/" + id+ "-" + index + ".png";
+    String path = "results/scatter/"+ filename + ".png";
     float factor = 25;
     pg = createGraphics(size, size);
     pg.beginDraw();
     pg.background(255);
-    String data = "";
     float [] startVal = new float[axis.length];
     for (int i = 0; i < axis.length; i++) {
       startVal[i] = getAVG( bTime, eTime, axis[i])[0];
     }
-    float[] prevVal = {size/2,size/2};
-    float[] currentVal = {0,0};
+    float[] prevVal = {size/2, size/2};
+    float[] currentVal = {0, 0};
     for (int i = 0; i < stamp.size(); i++) {
       Timestamp s = stamp.get(i);
       if (s.getTime() > bTime && s.getTime() < eTime) {
-          for (int j = 0; j< axis.length; j++) {
-            float val = startVal[j] - s.getVals()[axis[j]];
-            data += val;
-            data += ",";
-            currentVal[j] = (val * factor) + size/2;
-          }
-          //pg.strokeWeight(2);
-          pg.stroke(255,0, 0);
-          pg.line(prevVal[0], prevVal[1],currentVal[0],currentVal[1]);
-          //println(prevVal[0] + " : " + currentVal[0]);
-          prevVal[0] = currentVal[0];
-          prevVal[1] = currentVal[1];
-        data += "/";
+        for (int j = 0; j< axis.length; j++) {
+          float val = startVal[j] - s.getVals()[axis[j]];
+
+          currentVal[j] = (val * factor) + size/2;
+        }
+        //pg.strokeWeight(2);
+        pg.stroke(255, 0, 0);
+        pg.line(prevVal[0], prevVal[1], currentVal[0], currentVal[1]);
+        //println(prevVal[0] + " : " + currentVal[0]);
+        prevVal[0] = currentVal[0];
+        prevVal[1] = currentVal[1];
       }
     }
     pg.stroke(0);
@@ -277,8 +274,8 @@ class Participant {
     for (int i = -4; i <= 4; i++) {
       int pos = (size/2) + i * (size/8);
       if (i != 0) {
-       // pg.textSize(10);
-       // pg.fill(0);
+        // pg.textSize(10);
+        // pg.fill(0);
         pg.line(pos, size/2-5, pos, size/2 + 5);
         pg.line(size/2-5, pos, size/2+5, pos);
         //pg.text(i, pos, size/2);
@@ -286,9 +283,38 @@ class Participant {
     }
     pg.endDraw();
     output = pg;
-    output.save(path);
-    String[] outData = split(data, "/");
-    String saveLocation = "results/scatter/" + id +"-" + index + "scatter.txt";
+    //moet in een while loop
+    boolean duplicatePath = true;
+    int duplicateNumber = 0;
+    int maxTries = 3;
+    while(duplicatePath && duplicateNumber < maxTries) {
+      try {
+        PImage tst = loadImage(path);
+        println(tst.width);
+       println("test");
+        if (tst.width == size) {
+         duplicatePath = true;
+          println("n = " + duplicateNumber);
+          duplicateNumber ++;
+          println("n = " + duplicateNumber);
+          path = "results/scatter/"+ filename + "(" + duplicateNumber + ").png";
+          println(path);
+        } else {
+          duplicatePath = false;
+          output.save(path);
+           println("saved as " + path);
+        }
+      } 
+      catch (Exception e) {
+        //no problems found
+        duplicatePath = false;
+        if (duplicatePath == false) {
+         output.save(path);
+           println("saved as " + path);
+        }
+      }
+    }
+
     //saveStrings(saveLocation, outData);
     println("done");
   }
