@@ -261,7 +261,7 @@ class Participant {
           currentVal[j] = (val * factor) + size/2;
         }
         //pg.strokeWeight(2);
-        pg.stroke(255, 0, 0);
+        pg.stroke(255, 0, 0, 100);
         pg.line(prevVal[0], prevVal[1], currentVal[0], currentVal[1]);
         //println(prevVal[0] + " : " + currentVal[0]);
         prevVal[0] = currentVal[0];
@@ -281,12 +281,30 @@ class Participant {
         //pg.text(i, pos, size/2);
       }
     }
+    String time = floatToTime(bTime);
+    String [] lines = split(time, ",");
+    time = "";
+    for(int i = 0; i < lines.length; i++) {
+      int n = (int) toFloat(lines[i]);
+      if (n < 10) {
+        time+= "0";
+        time += n;
+        time += ":";
+      } else {
+        time += n;
+        time += ":";
+      }
+    }
+    time = time.substring(0, time.length()-4);
+    pg.fill(0);
+    pg.textSize(10);
+    pg.text("time: "+ time, 5, size-15);
     pg.endDraw();
     output = pg;
     //moet in een while loop
     boolean duplicatePath = true;
     int duplicateNumber = 0;
-    int maxTries = 3;
+    int maxTries = 60;
     while(duplicatePath && duplicateNumber < maxTries) {
       try {
         PImage tst = loadImage(path);

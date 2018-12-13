@@ -2,7 +2,32 @@ class Input {
   int Width;
   ArrayList<String> results;
   TextField textField;
+  
+  String[] commands = new String[5 * int(180 / 30)];
+  
+  //set to let program run commands
+  boolean saveplots = false;
+  
+  int count = 0;
   Input(int Width) {
+    int sTime = 0;
+    int eTime = 0;
+    int stepSize = 10800 / (commands.length / participant.length);
+    println(stepSize);
+    println(commands.length);
+    for (int i = 0; i < commands.length / participant.length; i++) {
+      eTime += stepSize;
+      for (int j = 0; j < participant.length; j++) {
+        int n = j + (i * participant.length);
+       // println(n);
+       int index = j+1;
+       int plotnumber = i+1;
+        commands[n] = "makescatter " + index + " " + sTime + " " + eTime + " participant" + index + "/halfhourplots/plot" + plotnumber;
+       // println(commands[n]);
+      }
+      sTime += stepSize;
+    }
+    count = saveplots ? 0 : commands.length;
     this.Width = Width;
     textField = new TextField();
     results = new ArrayList<String>();
@@ -23,6 +48,11 @@ class Input {
     this.Width = Width;
     textField.drawField();
     String cmd = textField.getOutput();
+    
+    if (count < commands.length) {
+     textField.setOutput(commands[count]);
+     count ++;
+    }
     if (cmd.length() > 0) {
       String[] cmds = split(cmd, " ");
       println(cmds);
@@ -169,6 +199,9 @@ class Input {
       String out = output;
       output = "";
       return out;
+    }
+    void setOutput(String output) {
+      this.output = output;
     }
   }
 }
