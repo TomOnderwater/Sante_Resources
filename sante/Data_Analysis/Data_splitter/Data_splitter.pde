@@ -10,6 +10,10 @@ void setup() {
   println(time);
   time *= 1.0;
   println(floatToTime(time));
+  shortToByte((short)240);
+  shortToByte((short)-12);
+  shortToByte((short)29);
+  shortToByte((short)30492);
     //splitData(1, true, 1000);
     //splitData(2, true, 1000);
     //splitData(3, true, 1000);
@@ -302,4 +306,30 @@ float toFloat(String data) {
   out = preComma + afterComma;
   out *= (float)mult;
   return NaN ? 0 : out;
+}
+void shortToByte(int n) {
+  byte a1;
+  byte a2;
+  int original = n;
+  int N = n;
+  
+  
+  n += (int)2147483648;
+  
+  println(n);
+  n<<=8;
+  println(n);
+  n>>=8;
+  //n /= 255;
+  println(n);
+  a2 = byte(n);
+  N -= 255;
+  a1 = byte(N / 255);
+  println("original = " + original);
+  println("byte a1: " + a1 + " byte a2: " + a2);
+  short reform = ((short)(a1 * 255));
+  reform += (short) a2;
+  println("reform = " + reform);
+  
+  
 }

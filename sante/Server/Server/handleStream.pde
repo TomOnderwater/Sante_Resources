@@ -5,11 +5,12 @@ void handleStream() {
       time.setTime();
       println("recording started at: " + time.getTime());
       streamOn = true;
+      hasSavedData = false;
     }
   }
       
   if (startButton.getState() == false) {
-    if (firstTimeSaving == false) {
+    //if (firstTimeSaving == false) {
       //meaning it went off, so experiment ex.
       if (hasSavedData == false) {
         println("Saving Data...");
@@ -19,5 +20,5 @@ void handleStream() {
         streamOn = false;
       }
     }
-  }
+//  }
 }

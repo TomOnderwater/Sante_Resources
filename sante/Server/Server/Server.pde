@@ -9,6 +9,7 @@ boolean firstTimeSaving, hasSavedData;
 boolean streamOn;
 int dataStreamAmount;
 int messageCount = 0;
+int index = 0;
 //ArrayList<Integer> currentStreams = new ArrayList<Integer>();
 
 void setup() {
@@ -45,11 +46,11 @@ void webSocketServerEvent(String msg) {
   //delim(msg);
   storeRawData(msg);
   messageCount ++;
-  }
+  } 
   msg = "";
 }
 void storeRawData(String msg) {
-  rawData += msg + "," + time.getTime() + "/";
+  rawData += "1," + msg + ",0," + time.getTime() + "/";
   //rawData += ",";
   //rawData += time.getTime();
   //rawData += "/";
@@ -57,7 +58,11 @@ void storeRawData(String msg) {
 
 void saveData() {
   String[] data = split(rawData, '/');
-  saveStrings("data/data.txt", data);
+  String filename = "raw";
+  String path = "data/"+ filename + index + ".txt";
+  index ++;
+  rawData = "";
+  saveStrings(path, data);
 }
 
 

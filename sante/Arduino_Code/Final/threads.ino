@@ -1,11 +1,11 @@
 String message = "";
 void sensorHandler() {
   //do nothing
-  message += ID;
-  message += ",";
+  //message += ID;
+  //message += ",";
   message += getAccel();
-  message += ",";
-  message += getHeart();
+  //message += ",";
+  //message += getHeart();
 }
 void socketHandler() {
   //send the packet
